@@ -1,4 +1,6 @@
 import { Product } from '../../types/product';
+import DatePickerOne from '../Forms/DatePicker/DatePickerOne';
+
 
 const productData: Product[] = [
   {
@@ -151,6 +153,7 @@ const TableTwo = () => {
         <h4 className="text-xl font-semibold text-black dark:text-white">
           Log In Table
         </h4>
+        <DatePickerOne />
       </div>
 
       <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">

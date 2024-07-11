@@ -42,7 +42,7 @@ function App() {
             </>
           }
         />
-        <Route
+        {/* <Route
           path="/calendar"
           element={
             <>
@@ -59,7 +59,7 @@ function App() {
               <Profile />
             </>
           }
-        />
+        /> */}
         <Route
           path="/forms/form-elements"
           element={
