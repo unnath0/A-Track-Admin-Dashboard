@@ -1,8 +1,17 @@
+import { Timestamp, GeoPoint } from "firebase/firestore";
+
 export type AttendanceDocument = {
-  id: string;
-  name: string;
+  empId: number;
+  empName: string;
   dept: string;
-  type: string;
-  time: string; // Adjust as per your timestamp format
-  // p_a: string;
-}
+  login: Timestamp;
+  logout?: Timestamp;
+  loc: GeoPoint;
+};
+
+export type UserDocument = {
+  empId: number;
+  empName: string;
+  dept: string;
+  position: string;
+};

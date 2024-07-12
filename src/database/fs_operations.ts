@@ -1,36 +1,30 @@
 import { db } from './firebase';
-import { collection, doc, query, where, getDocs, Timestamp, setDoc } from 'firebase/firestore';
-import { AttendanceDocument } from '../types/product';
+import { collection, doc, query, where, getDocs, Timestamp, setDoc, GeoPoint } from 'firebase/firestore';
+import { AttendanceDocument, UserDocument } from '../types/product';
 
-// Add a document to a collection
-export const addDocument = async (
-  collection_name: string,
-  document: Record<string, any>,
-): Promise<void> => {
+// Add or update attendance document
+export const upsertAttendanceDocument = async (attendance: AttendanceDocument): Promise<void> => {
   try {
-    // await addDoc(collection(db, collection_name), document);
-    const newDocRef = doc(collection(db, collection_name));
-    await setDoc(newDocRef, document);
-    console.log('Document successfully written!');
+    const attendanceRef = doc(collection(db, 'attendance_details'), `${attendance.empId}_${attendance.login.toMillis()}`);
+    await setDoc(attendanceRef, attendance, { merge: true });
+    console.log('Attendance document successfully written/updated!');
   } catch (error) {
-    console.error('Error writing document: ', error);
+    console.error('Error writing/updating attendance document: ', error);
   }
 };
 
-// Add 10 dummy documents to a collection
-export const addDummyDocuments = async (
-  collection_name: string,
-  dummyDocuments: Record<string, any>[],
-): Promise<void> => {
+// Add or update user document
+export const upsertUserDocument = async (user: UserDocument): Promise<void> => {
   try {
-    const promises = dummyDocuments.map((doc) => addDocument(collection_name, doc));
-    await Promise.all(promises);
-    console.log('Dummy documents successfully written!');
+    const userRef = doc(collection(db, 'user_details'), `${user.empId}`);
+    await setDoc(userRef, user, { merge: true });
+    console.log('User document successfully written/updated!');
   } catch (error) {
-    console.error('Error writing dummy documents: ', error);
+    console.error('Error writing/updating user document: ', error);
   }
 };
 
+// Fetch attendance by date
 export const getAttendanceByDate = async (date: string): Promise<AttendanceDocument[]> => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
@@ -42,61 +36,62 @@ export const getAttendanceByDate = async (date: string): Promise<AttendanceDocum
   try {
     const q = query(
       collection(db, "attendance_details"),
-      where("time", ">=", startOfDay),
-      where("time", "<=", endOfDay)
+      where("login", ">=", Timestamp.fromDate(startOfDay)),
+      where("login", "<=", Timestamp.fromDate(endOfDay))
     );
 
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const attendanceDoc: AttendanceDocument = {
-        id: doc.id,
-        name: data.name, // Replace with your actual field name for employee name
-        dept: data.dept, // Replace with your actual field name for department
-        type: data.type, // Replace with your actual field name for type of attendance
-        time: data.time.toDate().toISOString() // Adjust this to format your timestamp as needed
-      };
-      attendanceList.push(attendanceDoc);
+      const data = doc.data() as AttendanceDocument;
+      attendanceList.push(data);
     });
 
     return attendanceList;
-    console.log(attendanceList);
   } catch (error) {
     console.error('Error getting documents: ', error);
-    throw error; // Optionally re-throw or handle the error accordingly
+    throw error;
   }
 };
-
 
 // Get attendance details for a particular date and department
 export const getAttendanceByDateAndDept = async (
   date: string,
   dept: string,
-): Promise<void> => {
-  const startOfDay = Timestamp.fromDate(new Date(new Date(date).setHours(0, 0, 0, 0)));
-  const endOfDay = Timestamp.fromDate(new Date(new Date(date).setHours(23, 59, 59, 999)));
+): Promise<AttendanceDocument[]> => {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const attendanceList: AttendanceDocument[] = [];
 
   try {
     const q = query(
       collection(db, "attendance_details"),
-      where("time", ">=", startOfDay),
-      where("time", "<=", endOfDay),
+      where("login", ">=", Timestamp.fromDate(startOfDay)),
+      where("login", "<=", Timestamp.fromDate(endOfDay)),
       where("dept", "==", dept)
     );
 
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
-      console.log(doc.id, ' => ', doc.data());
+      const data = doc.data() as AttendanceDocument;
+      attendanceList.push(data);
     });
+
+    return attendanceList;
   } catch (error) {
     console.error('Error getting documents: ', error);
+    throw error;
   }
 };
 
 // Get attendance details for a particular empId with no date restriction
-export const getAttendanceByEmpId = async (empId: number): Promise<void> => {
+export const getAttendanceByEmpId = async (empId: number): Promise<AttendanceDocument[]> => {
+  const attendanceList: AttendanceDocument[] = [];
+
   try {
     const q = query(
       collection(db, "attendance_details"),
@@ -106,9 +101,107 @@ export const getAttendanceByEmpId = async (empId: number): Promise<void> => {
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
-      console.log(doc.id, ' => ', doc.data());
+      const data = doc.data() as AttendanceDocument;
+      attendanceList.push(data);
     });
+
+    return attendanceList;
   } catch (error) {
     console.error('Error getting documents: ', error);
+    throw error;
+  }
+};
+
+
+// Add multiple dummy attendance documents
+export const addDummyAttendanceDocuments = async (): Promise<void> => {
+  const dummyAttendanceData: AttendanceDocument[] = [
+    {
+      empId: 1,
+      empName: 'John Doe',
+      dept: 'CSE',
+      login: Timestamp.fromDate(new Date('2024-07-12T08:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-12T17:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 2,
+      empName: 'Jane Smith',
+      dept: 'CSE',
+      login: Timestamp.fromDate(new Date('2024-07-12T08:30:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-12T17:30:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 3,
+      empName: 'Alice Johnson',
+      dept: 'ECE',
+      login: Timestamp.fromDate(new Date('2024-07-12T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-12T18:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 4,
+      empName: 'Alucard',
+      dept: 'ISE',
+      login: Timestamp.fromDate(new Date('2024-07-12T09:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 4,
+      empName: 'Alucard',
+      dept: 'ISE',
+      login: Timestamp.fromDate(new Date('2024-07-12T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-12T18:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    // Add more dummy data as needed
+  ];
+
+  try {
+    const promises = dummyAttendanceData.map((doc) => upsertAttendanceDocument(doc));
+    await Promise.all(promises);
+    console.log('Dummy attendance documents successfully written!');
+  } catch (error) {
+    console.error('Error writing dummy attendance documents: ', error);
+  }
+};
+
+// Add multiple dummy user documents
+export const addDummyUserDocuments = async (): Promise<void> => {
+  const dummyUserData: UserDocument[] = [
+    {
+      empId: 1,
+      empName: 'John Doe',
+      dept: 'CSE',
+      position: 'Staff',
+    },
+    {
+      empId: 2,
+      empName: 'Jane Smith',
+      dept: 'CSE',
+      position: 'Staff',
+    },
+    {
+      empId: 3,
+      empName: 'Alice Johnson',
+      dept: 'ECE',
+      position: 'HOD',
+    },
+    {
+      empId: 4,
+      empName: 'Alucard',
+      dept: 'ISE',
+      position: 'Admin',
+    },
+    // Add more dummy data as needed
+  ];
+
+  try {
+    const promises = dummyUserData.map((doc) => upsertUserDocument(doc));
+    await Promise.all(promises);
+    console.log('Dummy user documents successfully written!');
+  } catch (error) {
+    console.error('Error writing dummy user documents: ', error);
   }
 };
