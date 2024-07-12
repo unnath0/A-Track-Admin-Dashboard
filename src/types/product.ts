@@ -1,7 +1,8 @@
-export type Product = {
+export type AttendanceDocument = {
   id: string;
   name: string;
-  login: string;
-  logout: string;
-  p_a: string;
-};
+  dept: string;
+  type: string;
+  time: string; // Adjust as per your timestamp format
+  // p_a: string;
+}
