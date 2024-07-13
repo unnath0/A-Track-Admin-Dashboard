@@ -47,6 +47,7 @@ export const getAttendanceByDate = async (date: string): Promise<AttendanceDocum
       attendanceList.push(data);
     });
 
+    console.log(attendanceList);
     return attendanceList;
   } catch (error) {
     console.error('Error getting documents: ', error);
@@ -81,6 +82,7 @@ export const getAttendanceByDateAndDept = async (
       attendanceList.push(data);
     });
 
+    console.log(attendanceList);
     return attendanceList;
   } catch (error) {
     console.error('Error getting documents: ', error);
@@ -105,6 +107,7 @@ export const getAttendanceByEmpId = async (empId: number): Promise<AttendanceDoc
       attendanceList.push(data);
     });
 
+    console.log(attendanceList);
     return attendanceList;
   } catch (error) {
     console.error('Error getting documents: ', error);
@@ -120,39 +123,39 @@ export const addDummyAttendanceDocuments = async (): Promise<void> => {
       empId: 1,
       empName: 'John Doe',
       dept: 'CSE',
-      login: Timestamp.fromDate(new Date('2024-07-12T08:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-12T17:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-13T08:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-13T17:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 2,
       empName: 'Jane Smith',
       dept: 'CSE',
-      login: Timestamp.fromDate(new Date('2024-07-12T08:30:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-12T17:30:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-13T08:30:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-13T17:30:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 3,
       empName: 'Alice Johnson',
       dept: 'ECE',
-      login: Timestamp.fromDate(new Date('2024-07-12T09:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-12T18:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-13T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-13T18:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 4,
       empName: 'Alucard',
       dept: 'ISE',
-      login: Timestamp.fromDate(new Date('2024-07-12T09:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-13T09:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 4,
       empName: 'Alucard',
       dept: 'ISE',
-      login: Timestamp.fromDate(new Date('2024-07-12T09:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-12T18:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-13T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-13T18:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     // Add more dummy data as needed
