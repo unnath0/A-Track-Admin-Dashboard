@@ -27,10 +27,8 @@ function App() {
   }, []);
 
   function RequireAuth({ children }: { children: JSX.Element }) {
-    let location = useLocation();
-
     if (!auth.currentUser) {
-      return <Navigate to="/auth/signin" state={{ from: location }} />;
+      return <Navigate to="/auth/signin"/>;
     }
 
     return children;
