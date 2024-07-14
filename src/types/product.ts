@@ -10,8 +10,10 @@ export type AttendanceDocument = {
 };
 
 export type UserDocument = {
-  empId: number;
-  empName: string;
-  dept: string;
-  position: string;
+  uid: string,
+  empId: number,
+  empName: string,
+  email: string | null,
+  dept: string,
+  position: string,
 };

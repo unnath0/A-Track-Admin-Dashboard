@@ -1,11 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import LogoDark from '../../images/logo/logo-dark.svg';
 import Logo from '../../images/logo/logo.svg';
 import DefaultLayout from '../../layout/DefaultLayout';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../database/firebase';
 
 const SignIn: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      const user = auth.currentUser;
+
+      if (user) {
+        console.log('User logged in successfully!');
+        alert('User logged in successfully!');
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error(error.message);
+      alert(error.message);
+    }
+  };
+
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Sign In" />
@@ -153,10 +176,10 @@ const SignIn: React.FC = () => {
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
               <span className="mb-1.5 block font-medium">Start for free</span>
               <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                Sign In to TailAdmin
+                Sign In to A-Track
               </h2>
 
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Email
@@ -165,6 +188,8 @@ const SignIn: React.FC = () => {
                     <input
                       type="email"
                       placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
@@ -190,12 +215,14 @@ const SignIn: React.FC = () => {
 
                 <div className="mb-6">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Re-type Password
+                    Password
                   </label>
                   <div className="relative">
                     <input
                       type="password"
                       placeholder="6+ Characters, 1 Capital letter"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
