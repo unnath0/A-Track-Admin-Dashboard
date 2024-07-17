@@ -201,7 +201,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         }`}
                       >
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li onClick={() => setSelectedDept("CSE")}>
+                          <li onClick={() => setSelectedDept('CSE')}>
                             <NavLink
                               to="/CSE"
                               className={({ isActive }) =>
@@ -248,6 +248,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               }
                             >
                               ECE
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </div>
+                      {/* TODO: Figure out how to show the employees table when this link is clicked  */}
+                      <div
+                        className={`translate transform overflow-hidden ${
+                          !open && 'hidden'
+                        }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          <li onClick={() => setSelectedDept('CSE')}>
+                            <NavLink
+                              to="/CSE"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Employees
                             </NavLink>
                           </li>
                         </ul>

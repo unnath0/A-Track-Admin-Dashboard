@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { auth } from '../../database/firebase';
+import { getCurrentEmployeeDetails } from '../../database/fs_operations';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [redirect, setRedirect] = useState(false);
+
+  const [currentUserDetail, setCurrentUserDetail] = useState<any | null>(null);
 
   const trigger = useRef<HTMLAnchorElement>(null);
   const dropdown = useRef<HTMLDivElement>(null);
@@ -17,7 +20,8 @@ const DropdownUser = () => {
         !dropdownOpen ||
         dropdown.current.contains(target as Node) ||
         trigger.current.contains(target as Node)
-      ) return;
+      )
+        return;
       setDropdownOpen(false);
     };
     document.addEventListener('click', clickHandler);
@@ -38,7 +42,7 @@ const DropdownUser = () => {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-      console.log("Log out successful");
+      console.log('Log out successful');
       setRedirect(true);
     } catch (error) {
       console.error('Error signing out:', error);
@@ -51,6 +55,15 @@ const DropdownUser = () => {
     return <Navigate to="/auth/signin" />;
   }
 
+  useEffect(() => {
+    const getCurrentUserDetail = async () => {
+      const data = await getCurrentEmployeeDetails();
+      setCurrentUserDetail(data);
+    }
+
+    getCurrentUserDetail();
+  });
+
   return (
     <div className="relative">
       <Link
@@ -61,9 +74,11 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Admin
+          {currentUserDetail ? currentUserDetail.position : 'Nothing'}
           </span>
-          <span className="block text-xs">Dept. of CSE</span>
+          <span className="block text-xs">
+            Dept. of {currentUserDetail ? currentUserDetail.dept : 'nothing'}
+          </span>
         </span>
         <span className="h-12 w-12 rounded-full">
           <img

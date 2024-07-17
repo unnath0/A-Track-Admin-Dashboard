@@ -1,11 +1,26 @@
-import { db } from './firebase';
-import { collection, doc, query, where, getDocs, Timestamp, setDoc, GeoPoint } from 'firebase/firestore';
+import { db, auth } from './firebase';
+import {
+  collection,
+  doc,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  Timestamp,
+  setDoc,
+  GeoPoint,
+} from 'firebase/firestore';
 import { AttendanceDocument, UserDocument } from '../types/product';
 
 // Add or update attendance document
-export const upsertAttendanceDocument = async (attendance: AttendanceDocument): Promise<void> => {
+export const upsertAttendanceDocument = async (
+  attendance: AttendanceDocument,
+): Promise<void> => {
   try {
-    const attendanceRef = doc(collection(db, 'attendance_details'), `${attendance.empId}_${attendance.login.toMillis()}`);
+    const attendanceRef = doc(
+      collection(db, 'attendance_details'),
+      `${attendance.empId}_${attendance.login.toMillis()}`,
+    );
     await setDoc(attendanceRef, attendance, { merge: true });
     console.log('Attendance document successfully written/updated!');
   } catch (error) {
@@ -44,8 +59,28 @@ export const getEmployees = async (): Promise<AttendanceDocument[]> => {
   }
 };
 
+// Fetch currently signed in user's details
+export const getCurrentEmployeeDetails = async () => {
+  try {
+    if (auth.currentUser != null) {
+      const docRef = doc(db, 'user_details', auth.currentUser.uid);
+      const docSnap = await getDoc(docRef);
+
+      // console.log(docSnap.data());
+      // console.log('Type of the query result: ', typeof docSnap.data());
+      // console.log('Position: ', docSnap.data().position);
+      return docSnap.data();
+    }
+  } catch (error) {
+    console.error('Error getting document: ', error);
+    throw error;
+  }
+};
+
 // Fetch attendance by date
-export const getAttendanceByDate = async (date: string): Promise<AttendanceDocument[]> => {
+export const getAttendanceByDate = async (
+  date: string,
+): Promise<AttendanceDocument[]> => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(date);
@@ -55,9 +90,9 @@ export const getAttendanceByDate = async (date: string): Promise<AttendanceDocum
 
   try {
     const q = query(
-      collection(db, "attendance_details"),
-      where("login", ">=", Timestamp.fromDate(startOfDay)),
-      where("login", "<=", Timestamp.fromDate(endOfDay))
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfDay)),
+      where('login', '<=', Timestamp.fromDate(endOfDay)),
     );
 
     const querySnapshot = await getDocs(q);
@@ -89,10 +124,10 @@ export const getAttendanceByDateAndDept = async (
 
   try {
     const q = query(
-      collection(db, "attendance_details"),
-      where("login", ">=", Timestamp.fromDate(startOfDay)),
-      where("login", "<=", Timestamp.fromDate(endOfDay)),
-      where("dept", "==", dept)
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfDay)),
+      where('login', '<=', Timestamp.fromDate(endOfDay)),
+      where('dept', '==', dept),
     );
 
     const querySnapshot = await getDocs(q);
@@ -111,13 +146,15 @@ export const getAttendanceByDateAndDept = async (
 };
 
 // Get attendance details for a particular empId with no date restriction
-export const getAttendanceByEmpId = async (empId: number): Promise<AttendanceDocument[]> => {
+export const getAttendanceByEmpId = async (
+  empId: number,
+): Promise<AttendanceDocument[]> => {
   const attendanceList: AttendanceDocument[] = [];
 
   try {
     const q = query(
-      collection(db, "attendance_details"),
-      where("empId", "==", empId)
+      collection(db, 'attendance_details'),
+      where('empId', '==', empId),
     );
 
     const querySnapshot = await getDocs(q);
@@ -134,7 +171,6 @@ export const getAttendanceByEmpId = async (empId: number): Promise<AttendanceDoc
     throw error;
   }
 };
-
 
 // Add multiple dummy attendance documents
 // export const addDummyAttendanceDocuments = async (): Promise<void> => {
