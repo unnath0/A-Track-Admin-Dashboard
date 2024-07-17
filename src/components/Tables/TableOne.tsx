@@ -1,125 +1,152 @@
-import { BRAND } from '../../types/brand';
-import BrandOne from '../../images/brand/brand-01.svg';
-import BrandTwo from '../../images/brand/brand-02.svg';
-import BrandThree from '../../images/brand/brand-03.svg';
-import BrandFour from '../../images/brand/brand-04.svg';
-import BrandFive from '../../images/brand/brand-05.svg';
-
-const brandData: BRAND[] = [
-  {
-    logo: BrandOne,
-    name: 'Google',
-    visitors: 3.5,
-    revenues: '5,768',
-    sales: 590,
-    conversion: 4.8,
-  },
-  {
-    logo: BrandTwo,
-    name: 'Twitter',
-    visitors: 2.2,
-    revenues: '4,635',
-    sales: 467,
-    conversion: 4.3,
-  },
-  {
-    logo: BrandThree,
-    name: 'Github',
-    visitors: 2.1,
-    revenues: '4,290',
-    sales: 420,
-    conversion: 3.7,
-  },
-  {
-    logo: BrandFour,
-    name: 'Vimeo',
-    visitors: 1.5,
-    revenues: '3,580',
-    sales: 389,
-    conversion: 2.5,
-  },
-  {
-    logo: BrandFive,
-    name: 'Facebook',
-    visitors: 3.5,
-    revenues: '6,768',
-    sales: 390,
-    conversion: 4.2,
-  },
-];
+import {
+  getAttendanceByEmpId,
+  getEmployees,
+} from '../../database/fs_operations';
+import { useEffect, useState } from 'react';
+import { AttendanceDocument } from '../../types/product';
+import { useAttendanceContext } from '../../contexts/AttendanceContext';
+import DatePickerOne from '../Forms/DatePicker/DatePickerOne';
 
 const TableOne = () => {
+  const [attendanceData, setAttendanceData] = useState<AttendanceDocument[]>(
+    [],
+  );
+  const { selectedEmpId, setSelectedEmpId } = useAttendanceContext();
+
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      try {
+        if (selectedEmpId !== null) {
+          const result = await getAttendanceByEmpId(selectedEmpId);
+          setAttendanceData(result);
+        } else {
+          const result = await getEmployees();
+          setAttendanceData(result);
+        }
+      } catch (error) {
+        console.error('Error fetching attendance:', error);
+      }
+    };
+
+    fetchAttendanceData();
+  }, [selectedEmpId]);
+
+  const handleRowClick = (empId: number) => {
+    setSelectedEmpId(empId);
+  };
+
   return (
-    <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-      <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-        Top Channels
-      </h4>
+    <div>
+      {selectedEmpId ? (
+        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="py-6 px-4 md:px-6 xl:px-7.5">
+            <h4 className="text-xl font-semibold text-black dark:text-white">
+              Log In Table
+            </h4>
+            <DatePickerOne />
+          </div>
 
-      <div className="flex flex-col">
-        <div className="grid grid-cols-3 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-5">
-          <div className="p-2.5 xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Source
-            </h5>
+          <div className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
+            <div className="col-span-1 flex items-center">
+              <p className="font-medium">Employee ID</p>
+            </div>
+            <div className="col-span-2 hidden items-center sm:flex">
+              <p className="font-medium">Employee Name</p>
+            </div>
+            <div className="col-span-1 hidden items-center sm:flex">
+              <p className="font-medium">Dept</p>
+            </div>
+            <div className="col-span-1 hidden items-center sm:flex">
+              <p className="font-medium">Login Time</p>
+            </div>
+            <div className="col-span-1 hidden items-center sm:flex">
+              <p className="font-medium">Logout Time</p>
+            </div>
+            <div className="col-span-2 hidden items-center sm:flex">
+              <p className="font-medium">Date</p>
+            </div>
+            {/* <div className="col-span-1 hidden items-center sm:flex">
+          <p className="font-medium">Present/Absent</p>
+        </div> */}
           </div>
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Visitors
-            </h5>
-          </div>
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Revenues
-            </h5>
-          </div>
-          <div className="hidden p-2.5 text-center sm:block xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Sales
-            </h5>
-          </div>
-          <div className="hidden p-2.5 text-center sm:block xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Conversion
-            </h5>
-          </div>
-        </div>
 
-        {brandData.map((brand, key) => (
-          <div
-            className={`grid grid-cols-3 sm:grid-cols-5 ${
-              key === brandData.length - 1
-                ? ''
-                : 'border-b border-stroke dark:border-strokedark'
-            }`}
-            key={key}
-          >
-            <div className="flex items-center gap-3 p-2.5 xl:p-5">
-              <div className="flex-shrink-0">
-                <img src={brand.logo} alt="Brand" />
+          {attendanceData.map((attendance, key) => (
+            <div
+              className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+              key={key}
+              onClick={() => handleRowClick(attendance.empId)}
+            >
+              <div className="col-span-1 flex items-center">
+                <p className="font-medium">{attendance.empId}</p>
               </div>
-              <p className="hidden text-black dark:text-white sm:block">
-                {brand.name}
-              </p>
+              <div className="col-span-2 hidden items-center sm:flex">
+                <p className="font-medium">{attendance.empName}</p>
+              </div>
+              <div className="col-span-1 hidden items-center sm:flex">
+                <p className="font-medium">{attendance.dept}</p>
+              </div>
+              <div className="col-span-1 hidden items-center sm:flex">
+                <p className="font-medium">
+                  {attendance.login.toDate().toLocaleTimeString()}
+                </p>
+              </div>
+              <div className="col-span-1 hidden items-center sm:flex">
+                <p className="font-medium">
+                  {attendance.logout
+                    ? attendance.logout.toDate().toLocaleTimeString()
+                    : 'N/A'}
+                </p>
+              </div>
+              <div className="col-span-2 hidden items-center sm:flex">
+                <p className="font-medium">
+                  {attendance.login.toDate().toLocaleDateString('en-GB')}
+                </p>
+              </div>
+              {/* <div className="col-span-1 hidden items-center sm:flex">
+            <p className="font-medium">{data.p_a}</p>
+          </div> */}
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="py-6 px-4 md:px-6 xl:px-7.5">
+            <h4 className="text-xl font-semibold text-black dark:text-white">
+              Employees Table
+            </h4>
+          </div>
 
-            <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className="text-black dark:text-white">{brand.visitors}K</p>
+          <div className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
+            <div className="col-span-1 flex items-center">
+              <p className="font-medium">Employee ID</p>
             </div>
-
-            <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className="text-meta-3">${brand.revenues}</p>
+            <div className="col-span-2 hidden items-center sm:flex">
+              <p className="font-medium">Employee Name</p>
             </div>
-
-            <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-              <p className="text-black dark:text-white">{brand.sales}</p>
-            </div>
-
-            <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-              <p className="text-meta-5">{brand.conversion}%</p>
+            <div className="col-span-1 hidden items-center sm:flex">
+              <p className="font-medium">Dept</p>
             </div>
           </div>
-        ))}
-      </div>
+
+          {attendanceData.map((attendance, key) => (
+            <div
+              className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+              key={key}
+              onClick={() => handleRowClick(attendance.empId)}
+            >
+              <div className="col-span-1 flex items-center">
+                <p className="font-medium">{attendance.empId}</p>
+              </div>
+              <div className="col-span-2 hidden items-center sm:flex">
+                <p className="font-medium">{attendance.empName}</p>
+              </div>
+              <div className="col-span-1 hidden items-center sm:flex">
+                <p className="font-medium">{attendance.dept}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

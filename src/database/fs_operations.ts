@@ -25,6 +25,26 @@ export const upsertUserDocument = async (user: UserDocument): Promise<void> => {
 };
 
 // Fetch attendance by date
+export const getEmployees = async (): Promise<AttendanceDocument[]> => {
+  const attendanceList: AttendanceDocument[] = [];
+
+  try {
+    const querySnapshot = await getDocs(collection(db, 'attendance_details'));
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data() as AttendanceDocument;
+      attendanceList.push(data);
+    });
+
+    console.log(attendanceList);
+    return attendanceList;
+  } catch (error) {
+    console.error('Error getting documents: ', error);
+    throw error;
+  }
+};
+
+// Fetch attendance by date
 export const getAttendanceByDate = async (date: string): Promise<AttendanceDocument[]> => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
