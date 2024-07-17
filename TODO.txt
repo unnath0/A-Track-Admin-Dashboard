@@ -1,2 +1,1 @@
-- Have no urls to each dept. Instead have li elements in the sidebar which will set the dept through shared context.
-- In the TableTwo component fetch different attendance details based on the state of selectedDept
+Display different table view options in sidebar based on position of user
