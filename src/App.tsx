@@ -10,7 +10,7 @@ import ECommerce from './pages/Dashboard/ECommerce';
 // import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Tables from './pages/Tables';
-// import FsTest from './components/FsTest';
+import FsTest from './components/FsTest';
 import { AttendanceProvider } from './contexts/AttendanceContext';
 import { auth } from './database/firebase';
 
@@ -28,7 +28,7 @@ function App() {
 
   function RequireAuth({ children }: { children: JSX.Element }) {
     if (!auth.currentUser) {
-      return <Navigate to="/auth/signin"/>;
+      return <Navigate to="/auth/signin" />;
     }
 
     return children;
@@ -42,39 +42,6 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <>
-                <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                <RequireAuth>
-                  <ECommerce />
-                </RequireAuth>
-              </>
-            }
-          />
-          <Route
-            path="/CSE"
-            element={
-              <>
-                <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                <RequireAuth>
-                  <ECommerce />
-                </RequireAuth>
-              </>
-            }
-          />
-          <Route
-            path="/ISE"
-            element={
-              <>
-                <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                <RequireAuth>
-                  <ECommerce />
-                </RequireAuth>
-              </>
-            }
-          />
-          <Route
-            path="/ECE"
             element={
               <>
                 <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
@@ -144,7 +111,7 @@ function App() {
               </>
             }
           />
-          {/* <Route
+          <Route
             path="/firestoreTest"
             element={
               <>
@@ -152,7 +119,7 @@ function App() {
                 <FsTest />
               </>
             }
-          /> */}
+          />
         </Routes>
       </AttendanceProvider>
     </>

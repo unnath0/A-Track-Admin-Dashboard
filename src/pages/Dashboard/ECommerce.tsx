@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import CardDataStats from '../../components/CardDataStats';
 import ChartThree from '../../components/Charts/ChartThree';
 import ChartTwo from '../../components/Charts/ChartTwo';
 import TableTwo from '../../components/Tables/TableTwo';
 import DefaultLayout from '../../layout/DefaultLayout';
+import { useAttendanceContext } from '../../contexts/AttendanceContext';
 
 const ECommerce: React.FC = () => {
+  const {selectedTable} = useAttendanceContext();
+
+  useEffect(() => {
+    console.log(selectedTable);
+  }, [selectedTable])
+
   return (
     <DefaultLayout>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">

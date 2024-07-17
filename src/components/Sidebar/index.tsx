@@ -21,7 +21,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   );
 
   // To know change the table values based on dept
-  const { setSelectedDept } = useAttendanceContext();
+  const { setSelectedDept, setSelectedEmpId, selectedTable, setSelectedTable } =
+    useAttendanceContext();
+  const departments = ['CSE', 'ISE', 'ECE'];
+
+  const handleDeptClick = (dept: string) => {
+    setSelectedDept(dept);
+    setSelectedEmpId(null);
+    setSelectedTable('TableTwo');
+  };
+
+  const handleEmployeesClick = () => {
+    setSelectedTable('TableOne');
+    setSelectedDept(null);
+    setSelectedEmpId(null);
+    console.log(selectedTable);
+  };
 
   // close on click outside
   useEffect(() => {
@@ -193,82 +208,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               All
                             </NavLink>
                           </li>
-                        </ul>
-                      </div>
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li onClick={() => setSelectedDept('CSE')}>
-                            <NavLink
-                              to="/CSE"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
+                          {departments.map((dept) => (
+                            <li
+                              key={dept}
+                              onClick={() => handleDeptClick(dept)}
                             >
-                              CSE
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li onClick={() => setSelectedDept('ISE')}>
-                            <NavLink
-                              to="/ISE"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              ISE
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li onClick={() => setSelectedDept('ECE')}>
-                            <NavLink
-                              to="/ECE"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              ECE
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      {/* TODO: Figure out how to show the employees table when this link is clicked  */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li onClick={() => setSelectedDept('CSE')}>
-                            <NavLink
-                              to="/CSE"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
+                              <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
+                                {dept}
+                              </div>
+                            </li>
+                          ))}
+                          <li onClick={() => handleEmployeesClick()}>
+                            <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
                               Employees
-                            </NavLink>
+                            </div>
                           </li>
                         </ul>
                       </div>

@@ -1,6 +1,6 @@
 import {
   addDummyAttendanceDocuments,
-  addDummyUserDocuments,
+  // addDummyUserDocuments,
   getAttendanceByDate,
   getAttendanceByDateAndDept,
   getAttendanceByEmpId,
@@ -9,7 +9,7 @@ import {
 const App: React.FC = () => {
   const runQueries = async () => {
     // Add dummy user documents
-    await addDummyUserDocuments();
+    // await addDummyUserDocuments();
 
     // Add dummy attendance documents
     await addDummyAttendanceDocuments();

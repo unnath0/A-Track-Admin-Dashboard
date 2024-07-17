@@ -11,28 +11,31 @@ const TableOne = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceDocument[]>(
     [],
   );
-  const { selectedEmpId, setSelectedEmpId } = useAttendanceContext();
+  const { selectedEmpId, setSelectedEmpId, setSelectedDept, selectedTable } =
+    useAttendanceContext();
 
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const fetchData = async () => {
       try {
-        if (selectedEmpId !== null) {
+        if (selectedEmpId) {
           const result = await getAttendanceByEmpId(selectedEmpId);
           setAttendanceData(result);
-        } else {
+        } else if (selectedTable === 'TableOne') {
           const result = await getEmployees();
           setAttendanceData(result);
         }
       } catch (error) {
-        console.error('Error fetching attendance:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchAttendanceData();
-  }, [selectedEmpId]);
+    fetchData();
+    console.log(attendanceData);
+  }, [selectedEmpId, selectedTable]);
 
   const handleRowClick = (empId: number) => {
     setSelectedEmpId(empId);
+    setSelectedDept(null);
   };
 
   return (
@@ -65,9 +68,6 @@ const TableOne = () => {
             <div className="col-span-2 hidden items-center sm:flex">
               <p className="font-medium">Date</p>
             </div>
-            {/* <div className="col-span-1 hidden items-center sm:flex">
-          <p className="font-medium">Present/Absent</p>
-        </div> */}
           </div>
 
           {attendanceData.map((attendance, key) => (
@@ -87,7 +87,7 @@ const TableOne = () => {
               </div>
               <div className="col-span-1 hidden items-center sm:flex">
                 <p className="font-medium">
-                  {attendance.login.toDate().toLocaleTimeString()}
+                  {attendance.login?.toDate().toLocaleTimeString()}
                 </p>
               </div>
               <div className="col-span-1 hidden items-center sm:flex">
@@ -99,12 +99,9 @@ const TableOne = () => {
               </div>
               <div className="col-span-2 hidden items-center sm:flex">
                 <p className="font-medium">
-                  {attendance.login.toDate().toLocaleDateString('en-GB')}
+                  {attendance.login?.toDate().toLocaleDateString('en-GB')}
                 </p>
               </div>
-              {/* <div className="col-span-1 hidden items-center sm:flex">
-            <p className="font-medium">{data.p_a}</p>
-          </div> */}
             </div>
           ))}
         </div>
@@ -128,20 +125,20 @@ const TableOne = () => {
             </div>
           </div>
 
-          {attendanceData.map((attendance, key) => (
+          {attendanceData.map((employee, key) => (
             <div
               className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
               key={key}
-              onClick={() => handleRowClick(attendance.empId)}
+              onClick={() => handleRowClick(employee.empId)}
             >
               <div className="col-span-1 flex items-center">
-                <p className="font-medium">{attendance.empId}</p>
+                <p className="font-medium">{employee.empId}</p>
               </div>
               <div className="col-span-2 hidden items-center sm:flex">
-                <p className="font-medium">{attendance.empName}</p>
+                <p className="font-medium">{employee.empName}</p>
               </div>
               <div className="col-span-1 hidden items-center sm:flex">
-                <p className="font-medium">{attendance.dept}</p>
+                <p className="font-medium">{employee.dept}</p>
               </div>
             </div>
           ))}

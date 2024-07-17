@@ -39,20 +39,20 @@ export const upsertUserDocument = async (user: UserDocument): Promise<void> => {
   }
 };
 
-// Fetch attendance by date
-export const getEmployees = async (): Promise<AttendanceDocument[]> => {
-  const attendanceList: AttendanceDocument[] = [];
+// Fetch list of employees
+export const getEmployees = async (): Promise<UserDocument[]> => {
+  const employeesList: UserDocument[] = [];
 
   try {
-    const querySnapshot = await getDocs(collection(db, 'attendance_details'));
+    const querySnapshot = await getDocs(collection(db, 'user_details'));
 
     querySnapshot.forEach((doc) => {
-      const data = doc.data() as AttendanceDocument;
-      attendanceList.push(data);
+      const data = doc.data() as UserDocument;
+      employeesList.push(data);
     });
 
-    console.log(attendanceList);
-    return attendanceList;
+    console.log(employeesList);
+    return employeesList;
   } catch (error) {
     console.error('Error getting documents: ', error);
     throw error;
@@ -173,58 +173,58 @@ export const getAttendanceByEmpId = async (
 };
 
 // Add multiple dummy attendance documents
-// export const addDummyAttendanceDocuments = async (): Promise<void> => {
-//   const dummyAttendanceData: AttendanceDocument[] = [
-//     {
-//       empId: 1,
-//       empName: 'John Doe',
-//       dept: 'CSE',
-//       login: Timestamp.fromDate(new Date('2024-07-13T08:00:00Z')),
-//       logout: Timestamp.fromDate(new Date('2024-07-13T17:00:00Z')),
-//       loc: new GeoPoint(37.7749, -122.4194),
-//     },
-//     {
-//       empId: 2,
-//       empName: 'Jane Smith',
-//       dept: 'CSE',
-//       login: Timestamp.fromDate(new Date('2024-07-13T08:30:00Z')),
-//       logout: Timestamp.fromDate(new Date('2024-07-13T17:30:00Z')),
-//       loc: new GeoPoint(37.7749, -122.4194),
-//     },
-//     {
-//       empId: 3,
-//       empName: 'Alice Johnson',
-//       dept: 'ECE',
-//       login: Timestamp.fromDate(new Date('2024-07-13T09:00:00Z')),
-//       logout: Timestamp.fromDate(new Date('2024-07-13T18:00:00Z')),
-//       loc: new GeoPoint(37.7749, -122.4194),
-//     },
-//     {
-//       empId: 4,
-//       empName: 'Alucard',
-//       dept: 'ISE',
-//       login: Timestamp.fromDate(new Date('2024-07-13T09:00:00Z')),
-//       loc: new GeoPoint(37.7749, -122.4194),
-//     },
-//     {
-//       empId: 4,
-//       empName: 'Alucard',
-//       dept: 'ISE',
-//       login: Timestamp.fromDate(new Date('2024-07-13T09:00:00Z')),
-//       logout: Timestamp.fromDate(new Date('2024-07-13T18:00:00Z')),
-//       loc: new GeoPoint(37.7749, -122.4194),
-//     },
-//     // Add more dummy data as needed
-//   ];
+export const addDummyAttendanceDocuments = async (): Promise<void> => {
+  const dummyAttendanceData: AttendanceDocument[] = [
+    {
+      empId: 1,
+      empName: 'John Doe',
+      dept: 'CSE',
+      login: Timestamp.fromDate(new Date('2024-07-17T08:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-17T17:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 2,
+      empName: 'Jane Smith',
+      dept: 'CSE',
+      login: Timestamp.fromDate(new Date('2024-07-17T08:30:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-17T17:30:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 3,
+      empName: 'Alice Johnson',
+      dept: 'ECE',
+      login: Timestamp.fromDate(new Date('2024-07-17T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-17T18:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 4,
+      empName: 'Alucard',
+      dept: 'ISE',
+      login: Timestamp.fromDate(new Date('2024-07-17T09:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    {
+      empId: 4,
+      empName: 'Alucard',
+      dept: 'ISE',
+      login: Timestamp.fromDate(new Date('2024-07-17T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-17T18:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+    // Add more dummy data as needed
+  ];
 
-//   try {
-//     const promises = dummyAttendanceData.map((doc) => upsertAttendanceDocument(doc));
-//     await Promise.all(promises);
-//     console.log('Dummy attendance documents successfully written!');
-//   } catch (error) {
-//     console.error('Error writing dummy attendance documents: ', error);
-//   }
-// };
+  try {
+    const promises = dummyAttendanceData.map((doc) => upsertAttendanceDocument(doc));
+    await Promise.all(promises);
+    console.log('Dummy attendance documents successfully written!');
+  } catch (error) {
+    console.error('Error writing dummy attendance documents: ', error);
+  }
+};
 
 // Add multiple dummy user documents
 // export const addDummyUserDocuments = async (): Promise<void> => {
