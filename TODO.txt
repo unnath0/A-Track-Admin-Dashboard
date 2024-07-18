@@ -1,1 +1,0 @@
-Display different table view options in sidebar based on position of user
