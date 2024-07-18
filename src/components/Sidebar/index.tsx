@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { useAttendanceContext } from '../../contexts/AttendanceContext';
+import useCurrentUserDetails from '../../hooks/currentUserDetails';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -19,6 +20,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
   );
+
+  const currentUserDetail = useCurrentUserDetails();
 
   // To know change the table values based on dept
   const { setSelectedDept, setSelectedEmpId, selectedTable, setSelectedTable } =
@@ -72,6 +75,121 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       document.querySelector('body')?.classList.remove('sidebar-expanded');
     }
   }, [sidebarExpanded]);
+
+  const [sidebarDropdownLinks, setSidebarDropdownLinks] =
+    useState<JSX.Element | null>(
+      currentUserDetail ? null : <div>loading...</div>,
+    );
+
+  // Display dropdown links based on user position
+  useEffect(() => {
+    console.log(currentUserDetail);
+    if (currentUserDetail) {
+      let content;
+      if (
+        currentUserDetail.position == 'Admin' ||
+        currentUserDetail.position == 'Principal'
+      ) {
+        content = (
+          <div
+            className={`translate transform overflow-hidden ${
+              !open && 'hidden'
+            }`}
+          >
+            <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+              <li onClick={() => setSelectedDept(null)}>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                    (isActive && '!text-white')
+                  }
+                >
+                  All
+                </NavLink>
+              </li>
+              {departments.map((dept) => (
+                <li key={dept} onClick={() => handleDeptClick(dept)}>
+                  <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
+                    {dept}
+                  </div>
+                </li>
+              ))}
+              <li onClick={() => handleEmployeesClick()}>
+                <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
+                  Employees
+                </div>
+              </li>
+            </ul>
+          </div>
+        );
+      } else if (currentUserDetail.position === 'HOD') {
+        content = (
+          <div
+            className={`translate transform overflow-hidden ${
+              !open && 'hidden'
+            }`}
+          >
+            <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+              <li onClick={() => setSelectedDept(null)}>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                    (isActive && '!text-white')
+                  }
+                >
+                  All
+                </NavLink>
+              </li>
+              <li
+                key={currentUserDetail.dept}
+                onClick={() => handleDeptClick(currentUserDetail.dept)}
+              >
+                <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
+                  {currentUserDetail.dept}
+                </div>
+              </li>
+              {/* TODO: Get employee list of only a particular dept */}
+              {/* <li onClick={() => handleEmployeesClick()}> */}
+              {/*   <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"> */}
+              {/*     Employees */}
+              {/*   </div> */}
+              {/* </li> */}
+            </ul>
+          </div>
+        );
+      } else {
+        setSelectedEmpId(currentUserDetail.empId);
+        content = (
+          <div
+            className={`translate transform overflow-hidden ${
+              !open && 'hidden'
+            }`}
+          >
+            <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+              <li onClick={() => setSelectedDept(null)}>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                    (isActive && '!text-white')
+                  }
+                >
+                  All
+                </NavLink>
+              </li>
+            </ul>
+          </div>
+        );
+      }
+      setSidebarDropdownLinks(content);
+    }
+  }, [currentUserDetail]);
+
+  // if (!currentUserDetail) {
+  //   setSidebarDropdownLinks(<div>loading...</div>);
+  // }
 
   return (
     <aside
@@ -191,40 +309,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </svg>
                       </NavLink>
                       {/* <!-- Dropdown Menu Start --> */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li onClick={() => setSelectedDept(null)}>
-                            <NavLink
-                              to="/"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              All
-                            </NavLink>
-                          </li>
-                          {departments.map((dept) => (
-                            <li
-                              key={dept}
-                              onClick={() => handleDeptClick(dept)}
-                            >
-                              <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
-                                {dept}
-                              </div>
-                            </li>
-                          ))}
-                          <li onClick={() => handleEmployeesClick()}>
-                            <div className="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white">
-                              Employees
-                            </div>
-                          </li>
-                        </ul>
-                      </div>
+                      {sidebarDropdownLinks}
                       {/* <!-- Dropdown Menu End --> */}
                     </React.Fragment>
                   );

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { auth } from '../../database/firebase';
-import { getCurrentEmployeeDetails } from '../../database/fs_operations';
+import useCurrentUserDetails from '../../hooks/currentUserDetails';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [redirect, setRedirect] = useState(false);
 
-  const [currentUserDetail, setCurrentUserDetail] = useState<any | null>(null);
+  const currentUserDetail = useCurrentUserDetails();
 
   const trigger = useRef<HTMLAnchorElement>(null);
   const dropdown = useRef<HTMLDivElement>(null);
@@ -54,15 +54,6 @@ const DropdownUser = () => {
   if (redirect) {
     return <Navigate to="/auth/signin" />;
   }
-
-  useEffect(() => {
-    const getCurrentUserDetail = async () => {
-      const data = await getCurrentEmployeeDetails();
-      setCurrentUserDetail(data);
-    }
-
-    getCurrentUserDetail();
-  });
 
   return (
     <div className="relative">
