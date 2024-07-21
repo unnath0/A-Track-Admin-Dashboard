@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { AnalyticData } from '../types/product';
 
 interface AttendanceContextProps {
   selectedDept: string | null;
@@ -7,6 +8,8 @@ interface AttendanceContextProps {
   setSelectedEmpId: (empId: number | null) => void;
   selectedTable: string;
   setSelectedTable: (table: string) => void;
+  analyticData: AnalyticData | null;
+  setAnalyticData: (data: AnalyticData | null) => void;
 }
 
 const AttendanceContext = createContext<AttendanceContextProps | undefined>(undefined);
@@ -23,10 +26,12 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const [selectedEmpId, setSelectedEmpId] = useState<number | null>(null);
   const [selectedTable, setSelectedTable] = useState<string>('TableTwo');
+  const [analyticData, setAnalyticData] = useState<AnalyticData | null>(null);
 
-  return (
-    <AttendanceContext.Provider value={{ selectedDept, selectedEmpId, setSelectedDept, setSelectedEmpId, selectedTable, setSelectedTable }}>
+   return (
+    <AttendanceContext.Provider value={{ selectedDept, selectedEmpId, setSelectedDept, setSelectedEmpId, selectedTable, setSelectedTable, analyticData, setAnalyticData }}>
       {children}
     </AttendanceContext.Provider>
   );
 };
+

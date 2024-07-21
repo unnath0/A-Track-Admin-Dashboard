@@ -4,36 +4,79 @@ import {
   getAttendanceByDateAndDept,
   getAttendanceByEmpId,
   getEmployees,
+  getEmployeesByDept,
 } from '../../database/fs_operations';
 import { useEffect, useState } from 'react';
 import { AttendanceDocument, UserDocument } from '../../types/product';
 import { useAttendanceContext } from '../../contexts/AttendanceContext';
+import useCurrentUserDetails from '../../hooks/currentUserDetails';
 
 const TableTwo = () => {
-  const [attendanceData, setAttendanceData] = useState<AttendanceDocument[]>([]);
+  const [attendanceData, setAttendanceData] = useState<AttendanceDocument[]>(
+    [],
+  );
   const [employeesData, setEmployeesData] = useState<UserDocument[]>([]);
-  const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const { selectedDept, setSelectedDept, selectedEmpId, setSelectedEmpId, selectedTable, setSelectedTable } = useAttendanceContext();
+  const [currentDate, setCurrentDate] = useState<string>(
+    new Date().toISOString().split('T')[0],
+  );
+  const {
+    selectedDept,
+    setSelectedDept,
+    selectedEmpId,
+    setSelectedEmpId,
+    selectedTable,
+    setSelectedTable,
+  } = useAttendanceContext();
+  const [error, setError] = useState<string | null>(null);
+
+  const currentUserDetail = useCurrentUserDetails();
+
+  useEffect(() => {
+    if (currentUserDetail?.position === 'Staff') {
+      setSelectedEmpId(currentUserDetail.empId);
+      setSelectedDept(null);
+      setSelectedTable('TableTwo');
+    } else if (currentUserDetail?.position === 'HOD') {
+      setSelectedDept(currentUserDetail.dept);
+      setSelectedEmpId(null);
+      setSelectedTable('TableTwo');
+    }
+  }, [currentUserDetail, setSelectedEmpId, setSelectedDept, setSelectedTable]);
 
   useEffect(() => {
     const fetchAttendanceData = async () => {
+      setError(null);
       try {
+        console.log('Fetching data with:', {
+          currentDate,
+          selectedDept,
+          selectedEmpId,
+          selectedTable,
+        });
         if (selectedEmpId) {
           const result = await getAttendanceByEmpId(selectedEmpId);
           setAttendanceData(result);
-        } else if (selectedDept) {
-          const result = await getAttendanceByDateAndDept(currentDate, selectedDept);
-          setAttendanceData(result);
         } else if (selectedTable === 'TableOne') {
-          const result = await getEmployees();
-          setEmployeesData(result);
-        }
-        else {
+          if (selectedDept == null) {
+            const result = await getEmployees();
+            setEmployeesData(result);
+          } else {
+            const result = await getEmployeesByDept(selectedDept);
+            setEmployeesData(result);
+          }
+        } else if (selectedDept) {
+          const result = await getAttendanceByDateAndDept(
+            currentDate,
+            selectedDept,
+          );
+          setAttendanceData(result);
+        } else {
           const result = await getAttendanceByDate(currentDate);
           setAttendanceData(result);
         }
       } catch (error) {
         console.error('Error fetching attendance:', error);
+        setError('Failed to fetch attendance data.');
       }
     };
 
@@ -45,6 +88,10 @@ const TableTwo = () => {
     setSelectedDept(null);
     setSelectedTable(tableName);
   };
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div>
@@ -80,7 +127,7 @@ const TableTwo = () => {
 
           {attendanceData.map((attendance, key) => (
             <div
-              className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+              className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5 hover:cursor-pointer hover:bg-slate-800"
               key={key}
               onClick={() => handleRowClick(attendance.empId, 'TableTwo')}
             >
@@ -135,7 +182,7 @@ const TableTwo = () => {
 
           {employeesData.map((employee, key) => (
             <div
-              className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+              className="grid grid-cols-8 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5 hover:cursor-pointer hover:bg-slate-800"
               key={key}
               onClick={() => handleRowClick(employee.empId, 'TableTwo')}
             >

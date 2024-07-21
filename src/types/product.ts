@@ -17,3 +17,23 @@ export type UserDocument = {
   dept: string,
   position: string,
 };
+
+export type WeeklyAttendance = {
+  [date: string]: { present: number; absent: number };
+}
+
+export type AnalyticData = {
+  totalUsers: number;
+  totalPresent: number;
+  totalAbsent: number;
+  lateLogIn: number;
+  earlyLogOut: number;
+  weeklyAttendance: WeeklyAttendance;
+}
+
+export type monthlyAnalyticData = {
+  totalPresent: number;
+  lateLogIn: number;
+  earlyLogOut: number;
+  totalAbsent: number;
+}

@@ -1,22 +1,79 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import CardDataStats from '../../components/CardDataStats';
 import ChartThree from '../../components/Charts/ChartThree';
 import ChartTwo from '../../components/Charts/ChartTwo';
 import TableTwo from '../../components/Tables/TableTwo';
 import DefaultLayout from '../../layout/DefaultLayout';
+import {
+  getCurrentEmployeeDetails,
+  getCombinedAttendanceData,
+} from '../../database/fs_operations';
 import { useAttendanceContext } from '../../contexts/AttendanceContext';
 
 const ECommerce: React.FC = () => {
-  const {selectedTable} = useAttendanceContext();
+  const { selectedDept, setSelectedDept, analyticData, setAnalyticData } =
+    useAttendanceContext();
+
+  const [userDetails, setUserDetails] = useState<any | null>(null);
 
   useEffect(() => {
-    console.log(selectedTable);
-  }, [selectedTable])
+    const fetchUserDetails = async () => {
+      try {
+        const details = await getCurrentEmployeeDetails();
+        setUserDetails(details);
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
 
-  return (
+    fetchUserDetails();
+  }, []);
+
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      try {
+        console.log(userDetails);
+        if (userDetails) {
+          let dept;
+          console.log(selectedDept);
+          if (userDetails.position === 'HOD') {
+            dept = userDetails.dept;
+          } else {
+            dept = selectedDept;
+          }
+          console.log(dept);
+          const data = await getCombinedAttendanceData(dept);
+          setAnalyticData(data);
+        }
+      } catch (err) {
+        console.error('Error fetching attendance data: ', err);
+      }
+    };
+
+    console.log(analyticData);
+
+    fetchAttendanceData();
+  }, [userDetails, setAnalyticData]);
+
+  if (!analyticData) {
+    return <div>No data available</div>;
+  }
+  return userDetails.position === 'Staff' ? (
+    <DefaultLayout>
+      <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
+        <div className="col-span-12 xl:row-span-5 xl:col-span-8">
+          <TableTwo />
+        </div>
+      </div>
+    </DefaultLayout>
+  ) : (
     <DefaultLayout>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-        <CardDataStats title="Total Present" total="93" rate="4.6%" levelUp>
+        <CardDataStats
+          title="Total Present"
+          total={analyticData.totalPresent}
+          rate=""
+        >
           <svg
             className="fill-primary dark:fill-white"
             width="25"
@@ -48,7 +105,11 @@ const ECommerce: React.FC = () => {
             </g>
           </svg>
         </CardDataStats>
-        <CardDataStats title="Total Absent" total="12" rate="4.35%" levelUp>
+        <CardDataStats
+          title="Total Absent"
+          total={analyticData.totalAbsent}
+          rate=""
+        >
           <svg
             className="fill-primary dark:fill-white"
             width="22"
@@ -72,7 +133,11 @@ const ECommerce: React.FC = () => {
             </g>
           </svg>
         </CardDataStats>
-        <CardDataStats title="Late Log In" total="3" rate="">
+        <CardDataStats
+          title="Late Log In"
+          total={analyticData.lateLogIn}
+          rate=""
+        >
           <svg
             className="fill-primary dark:fill-white"
             height="22px"
@@ -97,7 +162,11 @@ const ECommerce: React.FC = () => {
             </g>
           </svg>
         </CardDataStats>
-        <CardDataStats title="Total Users" total="130" rate="0.95%" levelDown>
+        <CardDataStats
+          title="Total Users"
+          total={analyticData.totalUsers}
+          rate=""
+        >
           <svg
             className="fill-primary dark:fill-white"
             width="22"
@@ -131,14 +200,8 @@ const ECommerce: React.FC = () => {
           <ChartThree />
         </div>
         <div className="col-span-12 xl:col-span-4">
-          <ChartTwo />
+          <ChartTwo weeklyAttendance={analyticData.weeklyAttendance} />
         </div>
-        {/* <div className="col-span-12 xl:col-span-4">
-          <ChartOne />
-        </div> */}
-        {/* <div className="col-span-12">
-          <ChatCard />
-        </div> */}
       </div>
     </DefaultLayout>
   );

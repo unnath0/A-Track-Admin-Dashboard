@@ -4,6 +4,7 @@ import {
   doc,
   query,
   where,
+  orderBy,
   getDocs,
   getDoc,
   Timestamp,
@@ -44,7 +45,35 @@ export const getEmployees = async (): Promise<UserDocument[]> => {
   const employeesList: UserDocument[] = [];
 
   try {
-    const querySnapshot = await getDocs(collection(db, 'user_details'));
+    const q = query(collection(db, 'user_details'), orderBy('empId'));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data() as UserDocument;
+      employeesList.push(data);
+    });
+
+    console.log(employeesList);
+    return employeesList;
+  } catch (error) {
+    console.error('Error getting documents: ', error);
+    throw error;
+  }
+};
+
+export const getEmployeesByDept = async (
+  dept: string,
+): Promise<UserDocument[]> => {
+  const employeesList: UserDocument[] = [];
+
+  try {
+    const q = query(
+      collection(db, 'user_details'),
+      where('dept', '==', dept),
+      orderBy('empId'),
+    );
+
+    const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
       const data = doc.data() as UserDocument;
@@ -172,6 +201,339 @@ export const getAttendanceByEmpId = async (
   }
 };
 
+// Utility Functions to get Date Ranges
+const getCurrentDateRange = () => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+};
+
+const getStartOfWeek = () => {
+  const start = new Date();
+  start.setDate(start.getDate() - start.getDay());
+  start.setHours(0, 0, 0, 0);
+  return start;
+};
+
+const getEndOfWeek = () => {
+  const end = new Date();
+  end.setDate(end.getDate() - end.getDay() + 6);
+  end.setHours(23, 59, 59, 999);
+  return end;
+};
+
+const getStartOfMonth = () => {
+  const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  start.setHours(0, 0, 0, 0);
+  return start;
+};
+
+const getEndOfMonth = () => {
+  const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+  end.setHours(23, 59, 59, 999);
+  return end;
+};
+
+// Function to get total users, optionally filtered by department
+const getTotalUsers = async (dept?: string | null) => {
+  let q;
+  if (dept) {
+    q = query(collection(db, 'user_details'), where('dept', '==', dept));
+  } else {
+    q = query(collection(db, 'user_details'));
+  }
+  const usersSnapshot = await getDocs(q);
+  return usersSnapshot.size;
+};
+
+// Function to get total present users, optionally filtered by department
+const getTotalPresent = async (dept?: string | null) => {
+  const { start, end } = getCurrentDateRange();
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(start)),
+      where('logout', '<=', Timestamp.fromDate(end)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(start)),
+      where('logout', '<=', Timestamp.fromDate(end)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+  return attendanceSnapshot.size;
+};
+
+// Function to get total absent users, optionally filtered by department
+const getTotalAbsent = async (totalUsers: number, dept?: string | null) => {
+  const totalPresent = await getTotalPresent(dept);
+  return totalUsers - totalPresent;
+};
+
+// Function to get late logins, optionally filtered by department
+const getLateLogIn = async (dept?: string | null) => {
+  const { start, end } = getCurrentDateRange();
+  const lateLogInTime = new Date();
+  lateLogInTime.setHours(9, 5, 0, 0); // 9:00 AM
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(start)),
+      where('login', '<=', Timestamp.fromDate(end)),
+      where('login', '>', Timestamp.fromDate(lateLogInTime)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(start)),
+      where('login', '<=', Timestamp.fromDate(end)),
+      where('login', '>', Timestamp.fromDate(lateLogInTime)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+  return attendanceSnapshot.size;
+};
+
+// Function to get early logouts, optionally filtered by department
+const getEarlyLogOut = async (dept?: string | null) => {
+  const { start, end } = getCurrentDateRange();
+  const earlyLogOutTime = new Date();
+  earlyLogOutTime.setHours(17, 0, 0, 0); // 5:00 PM
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(start)),
+      where('logout', '<=', Timestamp.fromDate(end)),
+      where('logout', '<', Timestamp.fromDate(earlyLogOutTime)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(start)),
+      where('logout', '<=', Timestamp.fromDate(end)),
+      where('logout', '<', Timestamp.fromDate(earlyLogOutTime)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+  return attendanceSnapshot.size;
+};
+
+// Function to get weekly attendance, optionally filtered by department
+const getWeeklyAttendance = async (dept?: string | null) => {
+  const startOfWeek = getStartOfWeek();
+  const endOfWeek = getEndOfWeek();
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfWeek)),
+      where('logout', '<=', Timestamp.fromDate(endOfWeek)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfWeek)),
+      where('logout', '<=', Timestamp.fromDate(endOfWeek)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+
+  const weeklyData: { [date: string]: { present: number; absent: number } } =
+    {};
+
+  attendanceSnapshot.forEach((doc) => {
+    const data = doc.data();
+    const date = data.login.toDate().toISOString().split('T')[0];
+    if (!weeklyData[date]) {
+      weeklyData[date] = { present: 0, absent: 0 };
+    }
+    weeklyData[date].present += 1;
+  });
+
+  const totalUsers = await getTotalUsers(dept);
+
+  Object.keys(weeklyData).forEach((date) => {
+    weeklyData[date].absent = totalUsers - weeklyData[date].present;
+  });
+
+  return weeklyData;
+};
+
+// Function to get combined attendance data, optionally filtered by department
+export const getCombinedAttendanceData = async (dept?: string | null) => {
+  try {
+    const totalUsers = await getTotalUsers(dept);
+    const totalPresent = await getTotalPresent(dept);
+    const totalAbsent = await getTotalAbsent(totalUsers, dept);
+    const lateLogIn = await getLateLogIn(dept);
+    const earlyLogOut = await getEarlyLogOut(dept);
+    const weeklyAttendance = await getWeeklyAttendance(dept);
+
+    const combinedData = {
+      totalUsers,
+      totalPresent,
+      totalAbsent,
+      lateLogIn,
+      earlyLogOut,
+      weeklyAttendance,
+    };
+
+    return combinedData;
+  } catch (error) {
+    console.error('Error fetching attendance data: ', error);
+    throw error;
+  }
+};
+
+// Monthly Data Functions
+const getTotalPresentForMonth = async (
+  dept?: string | null,
+): Promise<number> => {
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfMonth)),
+      where('logout', '<=', Timestamp.fromDate(endOfMonth)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfMonth)),
+      where('logout', '<=', Timestamp.fromDate(endOfMonth)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+
+  const presentEmployees = new Set<string>();
+
+  attendanceSnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.empId) {
+      presentEmployees.add(data.empId);
+    }
+  });
+
+  return presentEmployees.size;
+};
+
+const getTotalAbsentForMonth = async (
+  totalUsers: number,
+  dept?: string | null,
+) => {
+  const totalPresent = await getTotalPresentForMonth(dept);
+  return totalUsers - totalPresent;
+};
+
+const getLateLogInForMonth = async (dept?: string | null) => {
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
+  const lateLogInTime = new Date();
+  lateLogInTime.setHours(9, 5, 0, 0); // 9:05 AM
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfMonth)),
+      where('login', '<=', Timestamp.fromDate(endOfMonth)),
+      where('login', '>', Timestamp.fromDate(lateLogInTime)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfMonth)),
+      where('login', '<=', Timestamp.fromDate(endOfMonth)),
+      where('login', '>', Timestamp.fromDate(lateLogInTime)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+
+  const lateLogins = new Set<string>();
+
+  attendanceSnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.empId) {
+      lateLogins.add(data.empId);
+    }
+  });
+
+  return lateLogins.size;
+};
+
+const getEarlyLogOutForMonth = async (dept?: string | null) => {
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
+  const earlyLogOutTime = new Date();
+  earlyLogOutTime.setHours(17, 0, 0, 0); // 5:00 PM
+  let attendanceQuery;
+  if (dept) {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfMonth)),
+      where('logout', '<=', Timestamp.fromDate(endOfMonth)),
+      where('logout', '<', Timestamp.fromDate(earlyLogOutTime)),
+      where('dept', '==', dept),
+    );
+  } else {
+    attendanceQuery = query(
+      collection(db, 'attendance_details'),
+      where('login', '>=', Timestamp.fromDate(startOfMonth)),
+      where('logout', '<=', Timestamp.fromDate(endOfMonth)),
+      where('logout', '<', Timestamp.fromDate(earlyLogOutTime)),
+    );
+  }
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+
+  const earlyLogouts = new Set<string>();
+
+  attendanceSnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.empId) {
+      earlyLogouts.add(data.empId);
+    }
+  });
+
+  return earlyLogouts.size;
+};
+
+// Function to get monthly attendance data, optionally filtered by department
+export const getMonthlyAttendanceData = async (dept?: string | null) => {
+  try {
+    const totalUsers = await getTotalUsers(dept);
+    const totalPresent = await getTotalPresentForMonth(dept);
+    const totalAbsent = await getTotalAbsentForMonth(totalUsers, dept);
+    const lateLogIn = await getLateLogInForMonth(dept);
+    const earlyLogOut = await getEarlyLogOutForMonth(dept);
+
+    const combinedData = {
+      totalPresent,
+      totalAbsent,
+      lateLogIn,
+      earlyLogOut,
+    };
+
+    return combinedData;
+  } catch (error) {
+    console.error('Error fetching attendance data: ', error);
+    throw error;
+  }
+};
+
 // Add multiple dummy attendance documents
 export const addDummyAttendanceDocuments = async (): Promise<void> => {
   const dummyAttendanceData: AttendanceDocument[] = [
@@ -179,46 +541,57 @@ export const addDummyAttendanceDocuments = async (): Promise<void> => {
       empId: 1,
       empName: 'John Doe',
       dept: 'CSE',
-      login: Timestamp.fromDate(new Date('2024-07-18T08:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-18T17:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-21T08:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-21T17:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 2,
       empName: 'Jane Smith',
       dept: 'CSE',
-      login: Timestamp.fromDate(new Date('2024-07-18T08:30:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-18T17:30:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-21T08:30:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-21T17:30:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 3,
       empName: 'Alice Johnson',
       dept: 'ECE',
-      login: Timestamp.fromDate(new Date('2024-07-18T09:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-18T18:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-21T09:05:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-21T18:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 4,
       empName: 'Alucard',
       dept: 'ISE',
-      login: Timestamp.fromDate(new Date('2024-07-18T09:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-21T09:010:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 4,
       empName: 'Alucard',
       dept: 'ISE',
-      login: Timestamp.fromDate(new Date('2024-07-18T09:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-18T18:00:00Z')),
+      login: Timestamp.fromDate(new Date('2024-07-21T09:00:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-21T16:00:00Z')),
       loc: new GeoPoint(37.7749, -122.4194),
     },
+    {
+      empId: 7,
+      empName: 'lily',
+      dept: 'ECE',
+      login: Timestamp.fromDate(new Date('2024-07-21T09:05:00Z')),
+      logout: Timestamp.fromDate(new Date('2024-07-21T18:00:00Z')),
+      loc: new GeoPoint(37.7749, -122.4194),
+    },
+
     // Add more dummy data as needed
   ];
 
   try {
-    const promises = dummyAttendanceData.map((doc) => upsertAttendanceDocument(doc));
+    const promises = dummyAttendanceData.map((doc) =>
+      upsertAttendanceDocument(doc),
+    );
     await Promise.all(promises);
     console.log('Dummy attendance documents successfully written!');
   } catch (error) {

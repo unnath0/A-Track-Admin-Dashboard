@@ -5,11 +5,8 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
-import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
 // import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import Tables from './pages/Tables';
 import FsTest from './components/FsTest';
 import { AttendanceProvider } from './contexts/AttendanceContext';
 import { auth } from './database/firebase';
@@ -60,39 +57,6 @@ function App() {
               </>
             }
           /> */}
-          <Route
-            path="/tables"
-            element={
-              <>
-                <PageTitle title="Tables | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                <RequireAuth>
-                  <Tables />
-                </RequireAuth>
-              </>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <>
-                <PageTitle title="Settings | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                <RequireAuth>
-                  <Settings />
-                </RequireAuth>
-              </>
-            }
-          />
-          <Route
-            path="/chart"
-            element={
-              <>
-                <PageTitle title="Basic Chart | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                <RequireAuth>
-                  <Chart />
-                </RequireAuth>
-              </>
-            }
-          />
           <Route
             path="/auth/signin"
             element={

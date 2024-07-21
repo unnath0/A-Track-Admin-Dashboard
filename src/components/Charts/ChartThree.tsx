@@ -1,6 +1,10 @@
 import { ApexOptions } from 'apexcharts';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { getMonthlyAttendanceData } from '../../database/fs_operations';
+import { monthlyAnalyticData } from '../../types/product';
+import useCurrentUserDetails from '../../hooks/currentUserDetails';
+import { useAttendanceContext } from '../../contexts/AttendanceContext';
 
 interface ChartThreeState {
   series: number[];
@@ -12,12 +16,11 @@ const options: ApexOptions = {
     type: 'donut',
   },
   colors: ['#3C50E0', '#6577F3', '#8FD0EF', '#0FADCF'],
-  labels: ['Presnet', 'Late Log In', 'Early Log Out', 'Absent'],
+  labels: ['Present', 'Late Log In', 'Early Log Out', 'Absent'],
   legend: {
     show: false,
     position: 'bottom',
   },
-
   plotOptions: {
     pie: {
       donut: {
@@ -50,24 +53,52 @@ const options: ApexOptions = {
 };
 
 const ChartThree: React.FC = () => {
-  const [state, setState] = useState<ChartThreeState>({
-    series: [65, 34, 12, 56],
-  });
+  const [monthlyAnalyticData, setMonthlyAnalyticData] =
+    useState<monthlyAnalyticData | null>(null);
+  const [series, setSeries] = useState<number[]>([0, 0, 0, 0]);
 
-  const handleReset = () => {
-    setState((prevState) => ({
-      ...prevState,
-      series: [65, 34, 12, 56],
-    }));
-  };
-  handleReset;
+  const currentUserDetail = useCurrentUserDetails();
+
+  const { selectedDept, setSelectedDept } = useAttendanceContext();
+
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      try {
+        console.log(selectedDept);
+        if (currentUserDetail) {
+          let dept;
+          if (currentUserDetail.position === 'HOD') {
+            dept = currentUserDetail.dept;
+          } else {
+            dept = selectedDept;
+          }
+          const data = await getMonthlyAttendanceData(dept);
+          setMonthlyAnalyticData(data);
+          setSeries([
+            data.totalPresent,
+            data.lateLogIn,
+            data.earlyLogOut,
+            data.totalAbsent,
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching attendance data: ', err);
+      }
+    };
+
+    fetchAttendanceData();
+  }, [selectedDept, currentUserDetail]);
+
+  if (!monthlyAnalyticData) {
+    return <div>No data available</div>;
+  }
 
   return (
     <div className="sm:px-7.5 col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-5">
       <div className="mb-3 justify-between gap-4 sm:flex">
         <div>
           <h5 className="text-xl font-semibold text-black dark:text-white">
-            Atendance Analytics
+            Attendance Analytics
           </h5>
         </div>
         <div>
@@ -110,11 +141,7 @@ const ChartThree: React.FC = () => {
 
       <div className="mb-2">
         <div id="chartThree" className="mx-auto flex justify-center">
-          <ReactApexChart
-            options={options}
-            series={state.series}
-            type="donut"
-          />
+          <ReactApexChart options={options} series={series} type="donut" />
         </div>
       </div>
 
@@ -124,7 +151,7 @@ const ChartThree: React.FC = () => {
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-primary"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Present </span>
-              <span> 65% </span>
+              <span> {series[0]} </span>
             </p>
           </div>
         </div>
@@ -133,7 +160,7 @@ const ChartThree: React.FC = () => {
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#6577F3]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Late Log In </span>
-              <span> 34% </span>
+              <span> {series[1]} </span>
             </p>
           </div>
         </div>
@@ -142,7 +169,7 @@ const ChartThree: React.FC = () => {
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Early Log Out </span>
-              <span> 45% </span>
+              <span> {series[2]} </span>
             </p>
           </div>
         </div>
@@ -151,7 +178,7 @@ const ChartThree: React.FC = () => {
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#0FADCF]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Absent </span>
-              <span> 12% </span>
+              <span> {series[3]} </span>
             </p>
           </div>
         </div>

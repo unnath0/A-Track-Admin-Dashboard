@@ -1,6 +1,7 @@
 import { ApexOptions } from 'apexcharts';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { WeeklyAttendance } from '../../types/product';
 
 const options: ApexOptions = {
   colors: ['#3C50E0', '#80CAEE'],
@@ -16,7 +17,6 @@ const options: ApexOptions = {
       enabled: false,
     },
   },
-
   responsive: [
     {
       breakpoint: 1536,
@@ -42,9 +42,8 @@ const options: ApexOptions = {
   dataLabels: {
     enabled: false,
   },
-
   xaxis: {
-    categories: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+    categories: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
   },
   legend: {
     position: 'top',
@@ -52,7 +51,6 @@ const options: ApexOptions = {
     fontFamily: 'Satoshi',
     fontWeight: 500,
     fontSize: '14px',
-
     markers: {
       radius: 99,
     },
@@ -62,6 +60,10 @@ const options: ApexOptions = {
   },
 };
 
+interface ChartTwoProps {
+  weeklyAttendance: WeeklyAttendance;
+}
+
 interface ChartTwoState {
   series: {
     name: string;
@@ -69,26 +71,42 @@ interface ChartTwoState {
   }[];
 }
 
-const ChartTwo: React.FC = () => {
+const ChartTwo: React.FC<ChartTwoProps> = ({ weeklyAttendance }) => {
   const [state, setState] = useState<ChartTwoState>({
     series: [
       {
         name: 'Present',
-        data: [44, 55, 41, 67, 22, 43, 65],
+        data: [],
       },
       {
         name: 'Absent',
-        data: [13, 23, 20, 8, 13, 27, 15],
+        data: [],
       },
     ],
   });
 
-  const handleReset = () => {
-    setState((prevState) => ({
-      ...prevState,
-    }));
-  };
-  handleReset;
+  useEffect(() => {
+    const presentData: number[] = [];
+    const absentData: number[] = [];
+
+    Object.keys(weeklyAttendance).forEach(date => {
+      presentData.push(weeklyAttendance[date].present);
+      absentData.push(weeklyAttendance[date].absent);
+    });
+
+    setState({
+      series: [
+        {
+          name: 'Present',
+          data: presentData,
+        },
+        {
+          name: 'Absent',
+          data: absentData,
+        },
+      ],
+    });
+  }, [weeklyAttendance]);
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
@@ -151,3 +169,4 @@ const ChartTwo: React.FC = () => {
 };
 
 export default ChartTwo;
+
