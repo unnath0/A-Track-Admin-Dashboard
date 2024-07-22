@@ -535,56 +535,52 @@ export const getMonthlyAttendanceData = async (dept?: string | null) => {
 };
 
 // Add multiple dummy attendance documents
+const createISTTimestamp = (year: number, month: number, day: number, hour: number, minute: number): Timestamp => {
+  const date = new Date(year, month, day, hour, minute);
+  return Timestamp.fromDate(date);
+};
+
 export const addDummyAttendanceDocuments = async (): Promise<void> => {
+  const year = 2024;
+  const month = 6; // July (months are 0-based in JavaScript Date)
+  const day = 21;
+
+  const loginTime = createISTTimestamp(year, month, day, 9, 0); // 9:00 AM IST
+  const logoutTime = createISTTimestamp(year, month, day, 17, 0); // 5:00 PM IST
+
   const dummyAttendanceData: AttendanceDocument[] = [
     {
       empId: 1,
       empName: 'John Doe',
       dept: 'CSE',
-      login: Timestamp.fromDate(new Date('2024-07-21T08:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-21T17:00:00Z')),
+      login: loginTime,
+      logout: logoutTime,
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 2,
       empName: 'Jane Smith',
       dept: 'CSE',
-      login: Timestamp.fromDate(new Date('2024-07-21T08:30:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-21T17:30:00Z')),
+      login: loginTime,
+      logout: logoutTime,
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 3,
       empName: 'Alice Johnson',
       dept: 'ECE',
-      login: Timestamp.fromDate(new Date('2024-07-21T09:05:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-21T18:00:00Z')),
+      login: loginTime,
+      logout: logoutTime,
       loc: new GeoPoint(37.7749, -122.4194),
     },
     {
       empId: 4,
       empName: 'Alucard',
       dept: 'ISE',
-      login: Timestamp.fromDate(new Date('2024-07-21T09:010:00Z')),
+      login: loginTime,
+      logout: logoutTime,
       loc: new GeoPoint(37.7749, -122.4194),
     },
-    {
-      empId: 4,
-      empName: 'Alucard',
-      dept: 'ISE',
-      login: Timestamp.fromDate(new Date('2024-07-21T09:00:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-21T16:00:00Z')),
-      loc: new GeoPoint(37.7749, -122.4194),
-    },
-    {
-      empId: 7,
-      empName: 'lily',
-      dept: 'ECE',
-      login: Timestamp.fromDate(new Date('2024-07-21T09:05:00Z')),
-      logout: Timestamp.fromDate(new Date('2024-07-21T18:00:00Z')),
-      loc: new GeoPoint(37.7749, -122.4194),
-    },
-
     // Add more dummy data as needed
   ];
 
@@ -598,6 +594,7 @@ export const addDummyAttendanceDocuments = async (): Promise<void> => {
     console.error('Error writing dummy attendance documents: ', error);
   }
 };
+
 
 // Add multiple dummy user documents
 // export const addDummyUserDocuments = async (): Promise<void> => {
