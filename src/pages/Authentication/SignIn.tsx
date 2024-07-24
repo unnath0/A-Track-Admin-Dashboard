@@ -6,6 +6,7 @@ import Logo from '../../images/logo/logo.svg';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../database/firebase';
+import Header from '../../components/Header';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -30,9 +31,8 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <DefaultLayout>
-      <Breadcrumb pageName="Sign In" />
-
+    <div className='bg-white dark:bg-boxdark h-screen'>
+      <Header />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center">
           <div className="hidden w-full xl:block xl:w-1/2">
@@ -308,7 +308,7 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       </div>
-    </DefaultLayout>
+    </div>
   );
 };
 

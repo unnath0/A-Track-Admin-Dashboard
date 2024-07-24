@@ -9,6 +9,7 @@ import {
   getCombinedAttendanceData,
 } from '../../database/fs_operations';
 import { useAttendanceContext } from '../../contexts/AttendanceContext';
+import Loader from '../../common/Loader';
 
 const ECommerce: React.FC = () => {
   const { selectedDept, setSelectedDept, analyticData, setAnalyticData } =
@@ -56,7 +57,7 @@ const ECommerce: React.FC = () => {
   }, [userDetails, setAnalyticData]);
 
   if (!analyticData) {
-    return <div>No data available</div>;
+    return <Loader />;
   }
   return userDetails.position === 'Staff' ? (
     <DefaultLayout>

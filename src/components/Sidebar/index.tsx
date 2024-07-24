@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Navigate } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { useAttendanceContext } from '../../contexts/AttendanceContext';
 import useCurrentUserDetails from '../../hooks/currentUserDetails';
 import { getCombinedAttendanceData } from '../../database/fs_operations';
+import { auth } from '../../database/firebase';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -49,6 +50,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     setSelectedTable('TableOne');
     setSelectedDept(dept);
     setSelectedEmpId(null);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      console.log('Log out successful');
+      <Navigate to="/" />;
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
   };
 
   // close on click outside
@@ -314,6 +326,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 }}
               </SidebarLinkGroup>
             </ul>
+            {auth.currentUser ? (
+              <NavLink
+              to="/auth/signin"
+              onClick={handleSignOut}
+              className={({ isActive }) =>
+                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white hover:cursor-default' +
+                (isActive && '!text-white')
+              }
+            >
+              Sign Out
+            </NavLink>
+            ) : (
+              <div></div>
+            )}
           </div>
         </nav>
         {/* <!-- Sidebar Menu --> */}
